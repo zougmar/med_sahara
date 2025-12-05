@@ -21,9 +21,19 @@ const Home = () => {
     const fetchFeaturedExperiences = async () => {
       try {
         const response = await listingsAPI.getAll({ isPopular: true, limit: 3 });
-        setFeaturedExperiences(response.data.experiences || response.data);
+        console.log('Featured experiences response:', response);
+        // Check if response data is an array
+        const data = response.data.experiences || response.data;
+        if (Array.isArray(data)) {
+          setFeaturedExperiences(data);
+        } else {
+          console.error('Expected array but got:', typeof data, data);
+          setFeaturedExperiences([]);
+          setError('Invalid data format received from server');
+        }
       } catch (err) {
-        setError('Failed to load featured experiences');
+        console.error('Error fetching featured experiences:', err);
+        setError(err.message || 'Failed to load featured experiences');
       } finally {
         setLoading(false);
       }
@@ -97,7 +107,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredExperiences.map(experience => (
+              {Array.isArray(featuredExperiences) && featuredExperiences.map(experience => (
                 <NewExperienceCard key={experience._id} experience={experience} />
               ))}
             </div>

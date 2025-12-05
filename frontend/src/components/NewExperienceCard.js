@@ -6,6 +6,11 @@ import { useState } from 'react';
 
 const NewExperienceCard = ({ experience }) => {
   const [isLiked, setIsLiked] = useState(false);
+  
+  // Return early if experience is not valid
+  if (!experience || typeof experience !== 'object') {
+    return <div className="card">Invalid experience data</div>;
+  }
 
   const {
     _id,
@@ -25,6 +30,10 @@ const NewExperienceCard = ({ experience }) => {
   // Generate star rating
   const renderStars = () => {
     const stars = [];
+    // Return empty array if rating is not a valid number
+    if (typeof rating !== 'number' || isNaN(rating)) {
+      return stars;
+    }
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
 
