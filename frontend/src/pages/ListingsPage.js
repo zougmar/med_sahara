@@ -32,7 +32,7 @@ const ListingsPage = () => {
 
   useEffect(() => {
     fetchExperiences();
-  }, [pagination.current, filters]);
+  }, [pagination.current, filters, fetchExperiences]);
 
   const fetchExperiences = async () => {
     setLoading(true);
