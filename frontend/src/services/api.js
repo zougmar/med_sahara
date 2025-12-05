@@ -2,6 +2,14 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
+// Create axios instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 // Add response interceptor for better error handling
 api.interceptors.response.use(
   response => response,
@@ -23,14 +31,6 @@ api.interceptors.response.use(
   }
 );
 
-// Create axios instance
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
 // Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
@@ -47,8 +47,73 @@ api.interceptors.request.use(
 
 // Experiences API
 export const listingsAPI = {
-  getAll: (params = {}) => api.get('/api/experiences', { params }),
-  getById: (id) => api.get(`/api/experiences/${id}`),
+  getAll: (params = {}) => {
+    // Using mock data for now
+    return Promise.resolve({
+      data: [
+        {
+          _id: '1',
+          title: 'Desert Safari Adventure',
+          shortDescription: 'Experience the magic of Sahara desert with our expert guides.',
+          pricePerPerson: 150,
+          maxPeople: 10,
+          location: 'Merzouga, Morocco',
+          duration: '3 days',
+          type: 'Adventure',
+          rating: 4.8,
+          reviews: 124,
+          images: ['https://picsum.photos/seed/sahara1/400/300.jpg'],
+          isPopular: true
+        },
+        {
+          _id: '2',
+          title: 'Luxury Desert Camp',
+          shortDescription: 'Stay in our luxury desert camp under the stars.',
+          pricePerPerson: 250,
+          maxPeople: 8,
+          location: 'Erg Chebbi, Morocco',
+          duration: '2 days',
+          type: 'Luxury',
+          rating: 4.9,
+          reviews: 89,
+          images: ['https://picsum.photos/seed/sahara2/400/300.jpg'],
+          isPopular: true
+        },
+        {
+          _id: '3',
+          title: 'Berber Cultural Experience',
+          shortDescription: 'Immerse yourself in authentic Berber culture and traditions.',
+          pricePerPerson: 120,
+          maxPeople: 15,
+          location: 'Atlas Mountains, Morocco',
+          duration: '1 day',
+          type: 'Cultural',
+          rating: 4.7,
+          reviews: 56,
+          images: ['https://picsum.photos/seed/sahara3/400/300.jpg'],
+          isPopular: true
+        }
+      ]
+    });
+  },
+  getById: (id) => {
+    // Return mock data for specific experience
+    return Promise.resolve({
+      data: {
+        _id: id,
+        title: 'Desert Safari Adventure',
+        shortDescription: 'Experience the magic of Sahara desert with our expert guides.',
+        pricePerPerson: 150,
+        maxPeople: 10,
+        location: 'Merzouga, Morocco',
+        duration: '3 days',
+        type: 'Adventure',
+        rating: 4.8,
+        reviews: 124,
+        images: ['https://picsum.photos/seed/sahara1/400/300.jpg']
+      }
+    });
+  },
   create: (data) => api.post('/api/experiences', data),
   update: (id, data) => api.put(`/api/experiences/${id}`, data),
   delete: (id) => api.delete(`/api/experiences/${id}`),

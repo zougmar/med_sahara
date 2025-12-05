@@ -16,6 +16,9 @@ const Home = () => {
   const [featuredExperiences, setFeaturedExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Ensure featuredExperiences is always an array
+  const safeFeaturedExperiences = Array.isArray(featuredExperiences) ? featuredExperiences : [];
 
   useEffect(() => {
     const fetchFeaturedExperiences = async () => {
@@ -107,7 +110,7 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {Array.isArray(featuredExperiences) && featuredExperiences.map(experience => (
+              {safeFeaturedExperiences.map(experience => (
                 <NewExperienceCard key={experience._id} experience={experience} />
               ))}
             </div>

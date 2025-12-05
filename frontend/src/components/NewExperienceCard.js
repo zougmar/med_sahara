@@ -13,25 +13,26 @@ const NewExperienceCard = ({ experience }) => {
   }
 
   const {
-    _id,
-    title,
-    shortDescription,
-    pricePerPerson,
-    maxPeople,
-    location,
-    duration,
-    type,
-    rating,
-    reviews,
-    images,
-    isPopular
-  } = experience;
+    _id = '',
+    title = 'Experience',
+    shortDescription = '',
+    pricePerPerson = 0,
+    maxPeople = 1,
+    location = 'Unknown',
+    duration = '1 day',
+    type = 'Adventure',
+    rating = 0,
+    reviews = 0,
+    images = [],
+    isPopular = false,
+    ...rest
+  } = experience || {};
 
   // Generate star rating
   const renderStars = () => {
     const stars = [];
     // Return empty array if rating is not a valid number
-    if (typeof rating !== 'number' || isNaN(rating)) {
+    if (typeof rating !== 'number' || isNaN(rating) || rating <= 0) {
       return stars;
     }
     const fullStars = Math.floor(rating);
@@ -63,8 +64,8 @@ const NewExperienceCard = ({ experience }) => {
     <div className="card card-hover group">
       <div className="relative overflow-hidden">
         <img
-          src={images && images.length > 0 ? images[0] : 'https://via.placeholder.com/400x300?text=No+Image'}
-          alt={title}
+          src={images && images.length > 0 ? images[0] : 'https://picsum.photos/seed/experience/400/300.jpg'}
+          alt={title || 'Experience Image'}
           className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
@@ -136,13 +137,13 @@ const NewExperienceCard = ({ experience }) => {
 
           <div className="flex gap-2">
             <Link
-              to={`/experience/${_id}`}
+              to={`/experience/${_id || '1'}`}
               className="bg-sand-100 hover:bg-sand-200 text-sand-700 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:shadow-lg"
             >
               View Details
             </Link>
             <Link
-              to={`/booking?experienceId=${_id}`}
+              to={`/booking?experienceId=${_id || '1'}`}
               className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:shadow-lg"
             >
               Book Now

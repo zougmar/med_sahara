@@ -15,7 +15,7 @@ const NewHero = () => {
 
   return (
     <>
-      <section className="relative h-screen min-h-[600px] bg-cover bg-center flex items-center justify-center overflow-hidden" style={{backgroundImage: `url('https://www.story-rabat.com/wp-content/uploads/2024/02/1_1_11zon-1170x550.webp')`}}>
+      <section className="relative h-screen min-h-[600px] bg-cover bg-center flex items-center justify-center overflow-hidden" style={{backgroundImage: `url('https://www.story-rabat.com/wp-content/uploads/2024/02/1_1_11zon-1170x550.webp')`, backgroundSize: 'cover', backgroundPosition: 'center'}}>
         <div className="absolute inset-0 bg-gradient-to-r from-sand-900/85 to-primary-900/75 z-10"></div>
 
         {/* Decorative Elements */}
@@ -78,6 +78,8 @@ const NewHero = () => {
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                onError={() => console.error("Error loading video")}
+                onLoad={() => console.log("Video loaded successfully")}
               ></iframe>
             </div>
             <button 
