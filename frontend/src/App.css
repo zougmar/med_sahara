@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Sahara theme colors */
+:root {
+  --sand-gold: #C9972B;
+  --copper: #B87333;
+  --desert-stone: #7D5A50;
+  --tuareg-blue: #0E4D92;
+  --sand: #F5E6D3;
+}
+
+/* Custom Tailwind classes */
+@layer utilities {
+  .text-sand-gold {
+    color: var(--sand-gold);
+  }
+  .text-copper {
+    color: var(--copper);
+  }
+  .text-desert-stone {
+    color: var(--desert-stone);
+  }
+  .text-tuareg-blue {
+    color: var(--tuareg-blue);
+  }
+
+  .bg-sand-gold {
+    background-color: var(--sand-gold);
+  }
+  .bg-copper {
+    background-color: var(--copper);
+  }
+  .bg-desert-stone {
+    background-color: var(--desert-stone);
+  }
+  .bg-tuareg-blue {
+    background-color: var(--tuareg-blue);
+  }
+  .bg-sand {
+    background-color: var(--sand);
+  }
+
+  .border-sand-gold {
+    border-color: var(--sand-gold);
+  }
+  .border-copper {
+    border-color: var(--copper);
+  }
+  .border-desert-stone {
+    border-color: var(--desert-stone);
+  }
+  .border-tuareg-blue {
+    border-color: var(--tuareg-blue);
+  }
+}
+
+/* App-specific styles */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--desert-stone);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--copper);
+}

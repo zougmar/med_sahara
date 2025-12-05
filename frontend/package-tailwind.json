@@ -1,0 +1,7 @@
+{
+  "name": "tailwind-dependency",
+  "version": "1.0.0",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.0.0"
+  }
+}

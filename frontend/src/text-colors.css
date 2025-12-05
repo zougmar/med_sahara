@@ -1,0 +1,68 @@
+/* Better Text Colors for Sahara Adventures Website */
+
+/* Primary text colors */
+.text-primary {
+  color: #2c3e50;
+}
+
+.text-secondary {
+  color: #34495e;
+}
+
+.text-muted {
+  color: #7f8c8d;
+}
+
+.text-light {
+  color: #95a5a6;
+}
+
+/* Component-specific text colors */
+.hero-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.card-title {
+  color: #2c3e50;
+}
+
+.card-text {
+  color: #4a5568;
+}
+
+.card-meta {
+  color: #718096;
+}
+
+.section-title {
+  color: #2c3e50;
+}
+
+.section-subtitle {
+  color: #4a5568;
+}
+
+.feature-title {
+  color: #2c3e50;
+}
+
+.feature-text {
+  color: #4a5568;
+}
+
+.testimonial-text {
+  color: #4a5568;
+}
+
+/* Background colors for better contrast */
+.bg-card {
+  background-color: #ffffff;
+}
+
+.bg-section {
+  background-color: #f8f9fa;
+}
+
+.bg-feature {
+  background-color: #ffffff;
+}

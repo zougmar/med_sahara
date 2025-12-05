@@ -1,0 +1,543 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { CalendarIcon, MapPinIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/solid';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { listingsAPI } from '../services/api';
+
+const BookingPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const experienceId = new URLSearchParams(location.search).get('experienceId');
+
+  const [bookingStep, setBookingStep] = useState(1);
+  const [formData, setFormData] = useState({
+    experience: experienceId || '',
+    date: '',
+    time: '',
+    participants: 1,
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    specialRequests: '',
+    paymentMethod: 'creditCard',
+    cardName: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: ''
+  });
+
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (experienceId) {
+      setLoading(true);
+      listingsAPI.getById(experienceId)
+        .then(response => {
+          // Set the experience as the only option
+          setExperiences([response.data]);
+          // Pre-select this experience in the form
+          setFormData(prev => ({ ...prev, experience: experienceId }));
+        })
+        .catch(err => console.error('Error fetching experience:', err))
+        .finally(() => setLoading(false));
+    }
+  }, [experienceId]);
+
+  const timeSlots = [
+    '09:00 AM', '10:30 AM', '12:00 PM', '02:00 PM', '03:30 PM', '05:00 PM', '06:30 PM'
+  ];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const [errors, setErrors] = useState({});
+
+  const validateStep = () => {
+    const newErrors = {};
+
+    if (bookingStep === 1) {
+      if (!formData.experience) newErrors.experience = "Please select an experience";
+      if (!formData.date) newErrors.date = "Please select a date";
+      if (!formData.time) newErrors.time = "Please select a time";
+    } else if (bookingStep === 2) {
+      if (!formData.firstName) newErrors.firstName = "Please enter your first name";
+      if (!formData.lastName) newErrors.lastName = "Please enter your last name";
+      if (!formData.email) newErrors.email = "Please enter your email";
+      else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Please enter a valid email";
+      if (!formData.phone) newErrors.phone = "Please enter your phone number";
+    } else if (bookingStep === 3) {
+      if (formData.paymentMethod === "creditCard") {
+        if (!formData.cardName) newErrors.cardName = "Please enter name on card";
+        if (!formData.cardNumber) newErrors.cardNumber = "Please enter your card number";
+        else if (!/^[0-9\s]{13,19}$/.test(formData.cardNumber)) newErrors.cardNumber = "Please enter a valid card number";
+        if (!formData.expiryDate) newErrors.expiryDate = "Please enter expiry date";
+        else if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(formData.expiryDate)) newErrors.expiryDate = "Please enter a valid expiry date (MM/YY)";
+        if (!formData.cvv) newErrors.cvv = "Please enter CVV";
+        else if (!/^\d{3,4}$/.test(formData.cvv)) newErrors.cvv = "Please enter a valid CVV";
+      }
+      if (!termsAccepted) newErrors.terms = "Please accept terms and conditions";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (validateStep() && bookingStep < 3) setBookingStep(bookingStep + 1);
+  };
+
+  const handlePrevStep = () => {
+    if (bookingStep > 1) setBookingStep(bookingStep - 1);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateStep()) {
+      // Navigate to payment page with booking data
+      navigate('/payment', { state: { bookingData: formData } });
+    }
+  };
+
+  const selectedExperience = experiences.length > 0 ? experiences[0] : null;
+  const totalPrice = selectedExperience ? selectedExperience.price * formData.participants : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <LoadingSpinner size="xl" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white overflow-hidden shadow-xl rounded-2xl">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-sand-700 to-primary-700 px-6 py-8 sm:px-8">
+            <h1 className="text-3xl font-bold text-white">Book Your Sahara Adventure</h1>
+            <p className="mt-2 text-sand-100">Complete form below to reserve your experience</p>
+          </div>
+
+          {/* Progress Steps */}
+          <div className="px-6 py-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className={`flex items-center ${bookingStep >= 1 ? 'text-primary-600' : 'text-gray-400'}`}>
+                <span className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep >= 1 ? 'bg-primary-600 text-white' : 'bg-gray-200'} mr-3`}>
+                  {bookingStep > 1 ? <CheckIcon className="w-6 h-6" /> : '1'}
+                </span>
+                <span className="font-medium">Select Experience</span>
+              </div>
+              <div className={`flex items-center ${bookingStep >= 2 ? 'text-primary-600' : 'text-gray-400'}`}>
+                <span className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep >= 2 ? 'bg-primary-600 text-white' : 'bg-gray-200'} mr-3`}>
+                  {bookingStep > 2 ? <CheckIcon className="w-6 h-6" /> : '2'}
+                </span>
+                <span className="font-medium">Your Details</span>
+              </div>
+              <div className={`flex items-center ${bookingStep >= 3 ? 'text-primary-600' : 'text-gray-400'}`}>
+                <span className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep >= 3 ? 'bg-primary-600 text-white' : 'bg-gray-200'} mr-3`}>
+                  {bookingStep > 3 ? <CheckIcon className="w-6 h-6" /> : '3'}
+                </span>
+                <span className="font-medium">Payment</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Booking Form */}
+          <form onSubmit={handleSubmit}>
+            {/* Step 1: Select Experience */}
+            {bookingStep === 1 && (
+              <div className="px-6 py-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Choose Your Experience</h2>
+
+                {selectedExperience && (
+                  <div className="border rounded-lg p-4 border-primary-500">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="ml-4">
+                          <h3 className="font-medium text-gray-900">{selectedExperience.name}</h3>
+                          <p className="text-sm text-gray-500 flex items-center mt-1">
+                            <CalendarIcon className="w-4 h-4 mr-1" />
+                            {selectedExperience.duration}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-lg font-semibold text-primary-600">${selectedExperience.price}</div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      id="date"
+                      name="date"
+                      value={formData.date}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.date ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    />
+                    {errors.date && <p className="mt-1 text-sm text-red-600">{errors.date}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
+                      Time
+                    </label>
+                    <select
+                      id="time"
+                      name="time"
+                      value={formData.time}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.time ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    >
+                      <option value="">Select a time</option>
+                      {timeSlots.map(slot => (
+                        <option key={slot} value={slot}>{slot}</option>
+                      ))}
+                    </select>
+                    {errors.time && <p className="mt-1 text-sm text-red-600">{errors.time}</p>}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="participants" className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Participants
+                  </label>
+                  <div className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, participants: Math.max(1, prev.participants - 1) }))}
+                      className="bg-gray-200 text-gray-700 rounded-l-lg px-4 py-2 focus:outline-none"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      id="participants"
+                      name="participants"
+                      value={formData.participants}
+                      onChange={handleInputChange}
+                      min="1"
+                      className="w-16 text-center border-t border-b border-gray-300 py-2 focus:outline-none"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, participants: prev.participants + 1 }))}
+                      className="bg-gray-200 text-gray-700 rounded-r-lg px-4 py-2 focus:outline-none"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    disabled={bookingStep === 1}
+                    onClick={handlePrevStep}
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Personal Details */}
+            {bookingStep === 2 && (
+              <div className="px-6 py-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Details</h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    />
+                    {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    />
+                    {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    />
+                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                      required
+                    />
+                    {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-2">
+                    Special Requests (Optional)
+                  </label>
+                  <textarea
+                    id="specialRequests"
+                    name="specialRequests"
+                    value={formData.specialRequests}
+                    onChange={handleInputChange}
+                    rows="4"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                  />
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Payment */}
+            {bookingStep === 3 && (
+              <div className="px-6 py-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Information</h2>
+
+                <div className="mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'creditCard' }))}
+                      className={`p-4 border rounded-lg flex flex-col items-center justify-center transition-colors ${
+                        formData.paymentMethod === 'creditCard'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <CreditCardIcon className="w-8 h-8 mb-2 text-gray-700" />
+                      <span className="text-sm font-medium">Credit Card</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
+                      className={`p-4 border rounded-lg flex flex-col items-center justify-center transition-colors ${
+                        formData.paymentMethod === 'paypal'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="w-8 h-8 mb-2 flex items-center justify-center">
+                        <span className="text-blue-600 font-bold text-xl">P</span>
+                      </div>
+                      <span className="text-sm font-medium">PayPal</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'bankTransfer' }))}
+                      className={`p-4 border rounded-lg flex flex-col items-center justify-center transition-colors ${
+                        formData.paymentMethod === 'bankTransfer'
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="w-8 h-8 mb-2 flex items-center justify-center">
+                        <span className="text-green-600 font-bold text-xl">B</span>
+                      </div>
+                      <span className="text-sm font-medium">Bank Transfer</span>
+                    </button>
+                  </div>
+                </div>
+
+                {formData.paymentMethod === 'creditCard' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="md:col-span-2">
+                      <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-2">
+                        Name on Card
+                      </label>
+                      <input
+                        type="text"
+                        id="cardName"
+                        name="cardName"
+                        value={formData.cardName}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-2 border ${errors.cardName ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                        required
+                      />
+                      {errors.cardName && <p className="mt-1 text-sm text-red-600">{errors.cardName}</p>}
+                    </div>
+                    <div className="md:col-span-2">
+                      <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                        Card Number
+                      </label>
+                      <input
+                        type="text"
+                        id="cardNumber"
+                        name="cardNumber"
+                        value={formData.cardNumber}
+                        onChange={handleInputChange}
+                        placeholder="1234 5678 9012 3456"
+                        className={`w-full px-4 py-2 border ${errors.cardNumber ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                        required
+                      />
+                      {errors.cardNumber && <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 mb-2">
+                        Expiry Date
+                      </label>
+                      <input
+                        type="text"
+                        id="expiryDate"
+                        name="expiryDate"
+                        value={formData.expiryDate}
+                        onChange={handleInputChange}
+                        placeholder="MM/YY"
+                        className={`w-full px-4 py-2 border ${errors.expiryDate ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                        required
+                      />
+                      {errors.expiryDate && <p className="mt-1 text-sm text-red-600">{errors.expiryDate}</p>}
+                    </div>
+                    <div>
+                      <label htmlFor="cvv" className="block text-sm font-medium text-gray-700 mb-2">
+                        CVV
+                      </label>
+                      <input
+                        type="text"
+                        id="cvv"
+                        name="cvv"
+                        value={formData.cvv}
+                        onChange={handleInputChange}
+                        placeholder="123"
+                        className={`w-full px-4 py-2 border ${errors.cvv ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-primary-500 focus:border-primary-500`}
+                        required
+                      />
+                      {errors.cvv && <p className="mt-1 text-sm text-red-600">{errors.cvv}</p>}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="termsAccepted"
+                      name="termsAccepted"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="termsAccepted" className="ml-2 text-sm text-gray-700">
+                      I agree to the terms and conditions
+                    </label>
+                  </div>
+                  {errors.terms && <p className="mt-1 text-sm text-red-600">{errors.terms}</p>}
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="font-medium">${totalPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Tax (10%)</span>
+                    <span className="font-medium">${(totalPrice * 0.1).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="text-lg font-semibold">Total</span>
+                    <span className="text-lg font-bold text-primary-600">${(totalPrice * 1.1).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={handlePrevStep}
+                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BookingPage;
