@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { CalendarIcon, MapPinIcon, UserIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CalendarIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { listingsAPI } from '../services/api';
@@ -548,7 +548,7 @@ const BookingPage = () => {
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                      I agree to the <a href="#" className="text-primary-600 hover:text-primary-800">Terms and Conditions</a> and <a href="#" className="text-primary-600 hover:text-primary-800">Privacy Policy</a>
+                      I agree to the <a href="#terms" className="text-primary-600 hover:text-primary-800">Terms and Conditions</a> and <a href="#privacy" className="text-primary-600 hover:text-primary-800">Privacy Policy</a>
                     </label>
                   </div>
                   {errors.terms && <p className="mt-1 text-sm text-red-600">{errors.terms}</p>}
